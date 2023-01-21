@@ -3,7 +3,7 @@
 *
 * input:
 *   - primelist.txt: A list of all prime numbers 15 bits or less
-*   - p, q: The indicies of the primes in primeslist you want to use
+*   - p, q: The indicies of the primes that you want to use
 *   - message: The message you want to encryopt
 *
 * output:
@@ -49,13 +49,26 @@ void read_primes_from_file(char* filename, unsigned int* output, int count){
     }
 }
 
+/**
+ * A function to find some value `e` that is coprime to (q-1)(p-1)
+ * @param filename: char* containing the name of the file you want to read from
+ * @param q: first prime int used to crate private key
+ * @param p: second prime int used to create private key
+ * @return int that is coprime with (q-1)(p-1)
+*/
+int find_e(unsigned int p, unsigned int q){
+    unsigned int p_q = (p-1)*(q-1);
+    unsigned int e;
+    
+}
+
 int main(){
     // Create array to hold all the primes (we'll say there's 5000 for now)
     unsigned int* all_primes = calloc(NUM_PRIMES, sizeof(int));
     read_primes_from_file("primelist.txt", all_primes, NUM_PRIMES);
     
     // Ask user for indices of p and q
-    int p, q, N, phi;
+    unsigned int p, q, N, e, phi;
     printf("Enter indicies of two primes: \n");
     scanf("%d", &p);
     scanf("%d", &q);
