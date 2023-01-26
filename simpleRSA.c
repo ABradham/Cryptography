@@ -117,6 +117,36 @@ unsigned int extended_euclidean(unsigned int e, unsigned int phi){
     return t_1;
 }
 
+/**
+ * A function to perfom modular exponentiation of the form a^x mod b.
+ * @param a: int representing the number you want to exponentiate
+ * @param x: int representing the power you want to raise `a` to
+ * @param b: int representing the modular field you want to stay in
+ * @return: unsigned int result of modular exponentiation
+*/
+unsigned int modular_exponentiation(unsigned int a, unsigned int x, unsigned int b){}
+
+
+/**
+ * A function to encrypt a numeric message using the public key (N, e).
+ * @param msg: unsigned int storing the message you want to encrypt
+ * @param N: unsigned int with first part of public key
+ * @param e: unsigned int with second part of public key
+ * @return: new unisigned int representing encrypted message
+*/
+unsigned int encrypt(unsigned int msg, unsigned int N, unsigned int e){}
+
+/**
+ * A function to decrypt an encrypted message using the private key (N, d).
+ * @param msg: unsigned int storing the message you want to encrypt
+ * @param N: unsigned int with first part of private key
+ * @param d: unsigned int with second part of private key
+ * @return: new unisigned int representing encrypted message
+*/
+unsigned int decrypt(unsigned int msg, unsigned int N, unsigned int d){}
+
+
+
 int main(){
     // Create array to hold all the primes (we'll say there's 5000 for now)
     unsigned int* all_primes = calloc(NUM_PRIMES, sizeof(int));
