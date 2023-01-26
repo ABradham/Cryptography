@@ -124,7 +124,24 @@ unsigned int extended_euclidean(unsigned int e, unsigned int phi){
  * @param b: int representing the modular field you want to stay in
  * @return: unsigned int result of modular exponentiation
 */
-unsigned int modular_exponentiation(unsigned int a, unsigned int x, unsigned int b){}
+unsigned int modular_exponentiation(unsigned int a, unsigned int x, unsigned int b){
+    unsigned int result = 1;
+    a = a % b;
+    
+    while(x > 0){
+        // If exponent is odd, multiply by A once and take mod b
+        if(x % 2 != 0)
+            result = (result * a) % b;
+        
+        // Square A (since exponent is now even)
+        a = (a*a)%b;
+
+        // Decrement exponent by 1/2
+        x  /= 2;
+    }
+
+    return result;
+}
 
 
 /**
