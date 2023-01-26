@@ -119,29 +119,33 @@ unsigned int extended_euclidean(unsigned int e, unsigned int phi){
 
 /**
  * A function to perfom modular exponentiation of the form a^x mod b.
- * @param a: int representing the number you want to exponentiate
+ * @paragraph This function works by sucessively squaring a and taking 
+ *            the mod b until x (the exponent of interest) is depleted.
+ *            In the case where x is odd, we begin by simply multiplying
+ *            the result variable by x (as opposed to squaring it).
+ * @param a: long int representing the number you want to exponentiate
  * @param x: int representing the power you want to raise `a` to
  * @param b: int representing the modular field you want to stay in
  * @return: unsigned int result of modular exponentiation
 */
-unsigned int modular_exponentiation(unsigned int a, unsigned int x, unsigned int b){
+unsigned int modular_exponentiation(long long a, unsigned int x, unsigned int b){
     unsigned int result = 1;
     a = a % b;
-    
     while(x > 0){
-        // If exponent is odd, multiply by A once and take mod b
+        // If exponent is odd, multiply by A once and take mod B
         if(x % 2 != 0)
             result = (result * a) % b;
         
         // Square A (since exponent is now even)
-        a = (a*a)%b;
+        a = (a*a) % b;
 
         // Decrement exponent by 1/2
         x  /= 2;
     }
 
-    return result;
+    return result % b;
 }
+
 
 
 /**
@@ -151,7 +155,9 @@ unsigned int modular_exponentiation(unsigned int a, unsigned int x, unsigned int
  * @param e: unsigned int with second part of public key
  * @return: new unisigned int representing encrypted message
 */
-unsigned int encrypt(unsigned int msg, unsigned int N, unsigned int e){}
+unsigned int encrypt(unsigned int msg, unsigned int N, unsigned int e){
+    return modular_exponentiation(msg, e, N);
+}
 
 /**
  * A function to decrypt an encrypted message using the private key (N, d).
@@ -160,7 +166,9 @@ unsigned int encrypt(unsigned int msg, unsigned int N, unsigned int e){}
  * @param d: unsigned int with second part of private key
  * @return: new unisigned int representing encrypted message
 */
-unsigned int decrypt(unsigned int msg, unsigned int N, unsigned int d){}
+unsigned int decrypt(unsigned int msg, unsigned int N, unsigned int d){
+    return modular_exponentiation(msg, d, N);
+}
 
 
 
@@ -174,8 +182,8 @@ int main(){
     printf("Enter indicies of two primes: \n");
     scanf("%d", &p);
     scanf("%d", &q);
-    if(p == q){
-        printf("You cannot choose equivalent primes!\n");
+    if(p == q || p > NUM_PRIMES || q > NUM_PRIMES){
+        printf("Invalid primes chosen!\n");
         exit(1);
     }
     p = all_primes[p];
@@ -185,14 +193,25 @@ int main(){
     e = find_e(phi);
     d = extended_euclidean(e, phi);
 
-    printf("p = %d, q = %d\n", p, q);
+    printf("p = %d, q = %d, N = %d\n", p, q, N);
 
     printf("e: %d\n", e);
 
     printf("phi: %d\n", phi);
 
     printf("d: %d\n", d);
-
+    
+    unsigned int message = 0;
+    while(true){
+        printf("Enter a message (number < %d) to encrypt: \n", N);
+        scanf("%d", &message);
+        printf("\n\nMessage: %d\n", message);
+        unsigned int encrypted = encrypt(message, N, e);
+        printf("Encrypted: %d\n", encrypted);
+        unsigned int decrypted = decrypt(encrypted, N, d);
+        printf("Decrypted: %d\n", decrypted);
+    }
+    
     // Free memory used for primes list
     free(all_primes);
     return 0;
