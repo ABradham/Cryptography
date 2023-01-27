@@ -20,6 +20,7 @@
 #include <stdbool.h>
 
 #define NUM_PRIMES 3432
+
 /**
  * Read primes from file and save to int[]
  * @param filename: char* containing the name of the file you want to read from
@@ -113,7 +114,6 @@ unsigned int extended_euclidean(unsigned int e, unsigned int phi){
     t_1 = 0;
     t_2 = 1;
     t = t_1 - t_2 * q;
-    // printf("Q: %d; A: %d; B: %d; R: %d; T_1: %d; T_2: %d; T: %d\n", q, a, b, r, t_1, t_2, t);
     while(b != 0){
         // Check if b  == 0
         // Do swapping
@@ -126,8 +126,6 @@ unsigned int extended_euclidean(unsigned int e, unsigned int phi){
         q = a / b;
         r = a % b;
         t = t_1 - (t_2 * q);
-
-        // printf("Q: %d; A: %d; B: %d; R: %d; T_1: %d; T_2: %d; T: %d\n", q, a, b, r, t_1, t_2, t);
     }
     if(t_1 < 0)
         return t_1 + phi;
@@ -233,7 +231,8 @@ int main(){
     printf("n = ");
     print_bits(N);
     printf("\n");
-    
+
+    // Encryption / Decryption Loop
     unsigned int message = 0;
     while(true){
         printf("Enter a message (must be a positive NUMBER < %d) to encrypt [Press ctrl + c to exit]: \n", N);
