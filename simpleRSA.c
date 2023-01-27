@@ -123,6 +123,12 @@ unsigned int extended_euclidean(unsigned int e, unsigned int phi){
         t_2 = t;
 
         // Fill out rest of table
+        if(b == 0){
+            // Prevents divide by 0 errors
+            if(t_1 < 0)
+                return t_1 + phi;
+            return t_1;            
+        }
         q = a / b;
         r = a % b;
         t = t_1 - (t_2 * q);
@@ -238,8 +244,12 @@ int main(){
         printf("Enter a message (must be a positive NUMBER < %d) to encrypt [Press ctrl + c to exit]: \n", N);
         scanf("%d", &message);
         printf("\n\nMessage: %d\n", message);
+
+        // Encryption
         unsigned int encrypted = encrypt(message, N, e);
         printf("c = m^e mod n: %d\n", encrypted);
+
+        // Decryption
         unsigned int decrypted = decrypt(encrypted, N, d);
         printf("c^d mod n: %d\n\n", decrypted);
     }
