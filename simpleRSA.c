@@ -51,6 +51,23 @@ void read_primes_from_file(char* filename, unsigned int* output, int count){
 }
 
 /**
+ * A function to print the binary representation of a 32 bit number
+ * @param num: The number whose bits you want to print.
+*/
+void print_bits(unsigned int num){
+    for(unsigned int i = 32; i > 0; i--){
+        if( num & (1 << (i-1))){
+            printf("1 ");
+        }else{
+            printf("0 ");
+        }
+    }
+    
+    // End with newline char
+    printf("\n");
+}
+
+/**
  * A function to find if two given numbers (lower and higher) are coprime
  * @param lower: the lower number whose coprimality you want to test
  * @param higher: the higher number whose coprimality you want to test
@@ -182,12 +199,18 @@ int main(){
     printf("Enter indicies of two primes: \n");
     scanf("%d", &p);
     scanf("%d", &q);
+    
     if(p == q || p > NUM_PRIMES || q > NUM_PRIMES){
         printf("Invalid primes chosen!\n");
         exit(1);
     }
+
     p = all_primes[p];
     q = all_primes[q];
+
+    // Free memory used for primes list
+    free(all_primes);
+
     N = p*q;
     phi = (p-1)*(q-1);
     e = find_e(phi);
@@ -201,18 +224,26 @@ int main(){
 
     printf("d: %d\n", d);
     
+    printf("e = ");
+    print_bits(e);
+
+    printf("d = ");
+    print_bits(d);
+
+    printf("n = ");
+    print_bits(N);
+    printf("\n");
+    
     unsigned int message = 0;
     while(true){
-        printf("Enter a message (number < %d) to encrypt: \n", N);
+        printf("Enter a message (must be a positive NUMBER < %d) to encrypt [Press ctrl + c to exit]: \n", N);
         scanf("%d", &message);
         printf("\n\nMessage: %d\n", message);
         unsigned int encrypted = encrypt(message, N, e);
-        printf("Encrypted: %d\n", encrypted);
+        printf("c = m^e mod n: %d\n", encrypted);
         unsigned int decrypted = decrypt(encrypted, N, d);
-        printf("Decrypted: %d\n", decrypted);
+        printf("c^d mod n: %d\n\n", decrypted);
     }
-    
-    // Free memory used for primes list
-    free(all_primes);
+
     return 0;
 }
