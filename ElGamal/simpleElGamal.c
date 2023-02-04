@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-// Pairs of pre-selected primes and primitives
+// Pairs of pre-defined primes and primitives
 #define P_1 892086827
 #define G_1 2
 
@@ -24,8 +24,10 @@
 #define G_2 2
 
 
-/**
- * A structure to hold the value of an ElGamal encrypted message
+/** 
+ * @brief A structure to hold the value of an ElGamal encrypted message.
+ * C_1: unsigned long long holding the C_1 field of the El Gamal Message
+ * C_2: unsigned long long holding the C_2 field of the El Gamal Message
 */
 typedef struct ElGamalMessage_t{
     unsigned long long c_1;
@@ -44,9 +46,9 @@ unsigned long long random_in_range(unsigned long long lowest, unsigned long long
 
 /**
  * A function to find the value `d` in the expression de=1 mod phi
- * @param e: int public key
- * @param phi: private primes p and q arranged as (p-1)(q-1)
- * @return unsigned int private key `d` (multiplicative inverse of e mod phi)
+ * @param e: number whose inverse you want to find
+ * @param phi: number whose field your in (the number you are MODing (%) by)
+ * @return multiplicative inverse of e mod phi
 */
 unsigned long long extended_euclidean(unsigned long long e, unsigned long long phi){
     unsigned long long q, a, b, r;
@@ -84,14 +86,6 @@ unsigned long long extended_euclidean(unsigned long long e, unsigned long long p
     return t_1;
 }
 
-unsigned long long exponentiate(unsigned long long a, unsigned long long b){
-    for(int i = 0; i < b; i++){
-        printf("Exponentiated A: %lld\n", a);
-        a *= a;
-    }
-    return a;
-}
-
 /**
  * A function to perfom modular exponentiation of the form a^x mod b.
  * @paragraph This function works by sucessively squaring a and taking 
@@ -121,30 +115,6 @@ unsigned long long modular_exponentiation(long long a, unsigned long long x, uns
     return result % b;
 }
 
-// unsigned int modular_exponentiation_with_p(long long a, unsigned int x, unsigned int b, unsigned int p){
-//     unsigned int result = 1;
-//     a = a % b;
-//     while(x > 0){
-//         // If exponent is odd, multiply by A once and take mod B
-//         if(x % 2 != 0)
-//             result = (result * a) % b;
-        
-//         // Square A (since exponent is now even)
-//         a = (a*a) % b;
-
-//         // Decrement exponent by 1/2
-//         x  /= 2;
-//     }
-//     result = result % b;
-//     printf("Mod Exp result: %d\n", result);
-//     printf("P: %d\n", p);
-//     result *= p;
-//     printf("Mod Exp result * pt: %d\n", result);
-//     printf("Mod Exp result * pt mod p: %d\n", result % b);
-//     return result % b;
-// }
-
-
 /**
  * A function to calculate a suitable value y for the ElGamal public key.
  * 
@@ -161,7 +131,7 @@ unsigned long long find_y(unsigned long long x, unsigned long long p, unsigned l
 /**
  * A function to perfom ElGamal encryption on a plaintext int.
  * @param pt: unsigned int representing the plaintext number to encrypt.
- * @param g: unsigned int representing the first part of the public key
+ * @param y: unsigned int representing the first part of the public key
  * @param p: unsigned int representing second part of the public key
  * @return: unsigned int result of encryption
 */
@@ -183,33 +153,120 @@ void ElGamal_encrypt(unsigned long long pt, unsigned long long y, ElGamalMessage
 
 }
 
+/**
+ * A function to perfom ElGamal encryption on a plaintext int given a K value.
+ * @param pt: unsigned int representing the plaintext number to encrypt.
+ * @param g: unsigned int representing the first part of the public key
+ * @param p: unsigned int representing second part of the public key
+ * @param k: unsigned long long representing random k value for encryption
+ * @return: unsigned int result of encryption
+*/
+void ElGamal_encrypt_with_k(unsigned long long pt, unsigned long long y, unsigned long long k,ElGamalMessage* message){
+    
+    // Generate first part of ElGamal ciphertext
+    unsigned long long c_1 = modular_exponentiation(G_1, k, P_1);
+
+    // Generate second part of ElGamal ciphertext
+    unsigned long long c_2 = modular_exponentiation(y, k, P_1);
+    c_2 *= pt;
+    c_2 = c_2 % P_1;
+
+    // Save message into object
+    message->c_1 = c_1;
+    message->c_2 = c_2;
+
+}
+
+/**
+ * A function to perfom ElGamal decryption on an ElGamalMessage struct.
+ * @param message: An ElGamalMessage* containing the encrypted message.
+ * @param x: Unisigned long long El Gamal private key
+ * @return: Result of decryption
+*/
 unsigned long long ElGamal_decrypt(ElGamalMessage* message, unsigned long long x){
     unsigned long long c_1_prime = extended_euclidean(modular_exponentiation(message->c_1, x, P_1), P_1);
     unsigned long long product = c_1_prime * message->c_2;
     return product % P_1;
 }
 
+unsigned long long ElGamal_decrypt_parts(unsigned long long c_1, unsigned long long c_2, unsigned long long x){
+    unsigned long long c_1_prime = extended_euclidean(modular_exponentiation(c_1, x, P_1), P_1);
+    unsigned long long product = c_1_prime * c_2;
+    return product % P_1;
+}
+
+
+void mental_poker(){
+    // Bob's private key x, public key y, and random number k
+    unsigned long long bob_x = 15;
+    unsigned long long bob_y = find_y(bob_x, P_1, G_1);
+    unsigned long long bob_k = 7;
+
+    // Alice's private key x, public key y, and list of random numbers k
+    unsigned long long alice_x = 20;
+    unsigned long long alice_y = find_y(alice_x, P_1, G_1);
+    unsigned long long alice_ks[16] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+
+    // Bob's initial card shuffle
+    unsigned long long Bob_shuffle[16] = {13, 17, 4, 6, 14, 2, 12, 15, 5, 3, 7, 10, 8, 11, 16, 9};
+    printf("Bob's starting shuffle: {13, 17, 4, 6, 14, 2, 12, 15, 5, 3, 7, 10, 8, 11, 16, 9}\n");
+
+    // Bob's encrypted card shuffle (all cards are now encrypted ElGamalMessage*s)
+    //ElGamalMessage** messages = calloc(16, sizeof(ElGamalMessage));
+    ElGamalMessage** messages = calloc(16, sizeof(ElGamalMessage*));
+    for(int i = 0; i<16; i++){
+        ElGamalMessage* new_message = malloc(sizeof(ElGamalMessage));
+        ElGamal_encrypt_with_k(Bob_shuffle[i], bob_y, bob_k, new_message);
+        /// @brief  Alice only cares about the P_i y_{B}^k
+        messages[i] = new_message;
+
+        // printf("%lld\n", ElGamal_decrypt(messages[i], bob_x));
+    }
+    printf("Encrypted Bob's deck!\n");
+
+    // Alice does her own round of encryption
+    ElGamalMessage** alice_messages = calloc(16, sizeof(ElGamalMessage*));
+    for(int i = 0; i<16; i++){
+        ElGamalMessage* new_message = malloc(sizeof(ElGamalMessage));
+        ElGamal_encrypt_with_k(messages[i]->c_2, alice_y, alice_ks[i], new_message);
+        alice_messages[i] = new_message;
+    }
+
+    // Bob Chooses card 3, but doesn't know whats there:
+    unsigned long long res1 = ElGamal_decrypt_parts(alice_messages[3]->c_1, alice_messages[3]->c_2, alice_x);
+    unsigned long long res2 = ElGamal_decrypt_parts(messages[3]->c_1, res1, bob_x);
+    printf("3rd card is: %lld\n", res2);
+
+
+    // Alice chooses card 7, but doesn't know what's there
+    res1 =  ElGamal_decrypt_parts(messages[7]->c_1, alice_messages[7]->c_2, bob_x);
+    res2 = ElGamal_decrypt_parts(alice_messages[7]->c_1, res1, alice_x);
+    printf("7th card is: %lld\n", res2);
+}
+
 int main(){
-    unsigned long long x;
-    printf("Choose a private key 2 <= x < %d\n", P_1-1);
-    scanf("%lld", &x);
+    // unsigned long long x;
+    // printf("Choose a private key 2 <= x < %d\n", P_1-1);
+    // scanf("%lld", &x);
     
-    // Compute public key y
-    unsigned long long y = find_y(x, P_1, G_1);
+    // // Compute public key y
+    // unsigned long long y = find_y(x, P_1, G_1);
 
-    // Allocate memory for encrypted message
-    ElGamalMessage* message = calloc(1, sizeof(ElGamalMessage));
+    // // Allocate memory for encrypted message
+    // ElGamalMessage* message = calloc(1, sizeof(ElGamalMessage));
 
-    // Encrypt message and save into memory
-    ElGamal_encrypt(3321321, y, message);
-    printf("Encrypted Message C_1: %lld, C_2: %lld\n", message->c_1, message->c_2);
+    // // Encrypt message and save into memory
+    // ElGamal_encrypt(3321321, y, message);
+    // printf("Encrypted Message C_1: %lld, C_2: %lld\n", message->c_1, message->c_2);
 
-    // Decrypt message
-    unsigned long long decrypted = ElGamal_decrypt(message, x);
-    printf("Decrypted Message: %lld\n", decrypted);
+    // // Decrypt message
+    // unsigned long long decrypted = ElGamal_decrypt(message, x);
+    // printf("Decrypted Message: %lld\n", decrypted);
     
-    // Free message memory
-    free(message);
+    // // Free message memory
+    // free(message);
+
+    mental_poker();
 
     return 0;
 }
