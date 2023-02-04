@@ -23,6 +23,7 @@
 #define P_2 750443147
 #define G_2 2
 
+#define POKER 1
 
 /** 
  * @brief A structure to hold the value of an ElGamal encrypted message.
@@ -217,10 +218,7 @@ void mental_poker(){
     for(int i = 0; i<16; i++){
         ElGamalMessage* new_message = malloc(sizeof(ElGamalMessage));
         ElGamal_encrypt_with_k(Bob_shuffle[i], bob_y, bob_k, new_message);
-        /// @brief  Alice only cares about the P_i y_{B}^k
         messages[i] = new_message;
-
-        // printf("%lld\n", ElGamal_decrypt(messages[i], bob_x));
     }
     printf("Encrypted Bob's deck!\n");
 
@@ -232,41 +230,68 @@ void mental_poker(){
         alice_messages[i] = new_message;
     }
 
-    // Bob Chooses card 3, but doesn't know whats there:
+    // Alice shuffles the deck using Fisher-Yates (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
+    for (int i = 0; i < 16-1; ++i){
+        int j = rand() % (16-i) + i;
+        ElGamalMessage* temp_M = messages[i];
+        ElGamalMessage* temp_AM = alice_messages[i];
+
+        messages[i] = messages[j];
+        messages[j] = temp_M;
+
+        alice_messages[i] = alice_messages[j];
+        alice_messages[j] = temp_AM;
+    }
+
+
+    /**
+     * 1. Bob chooses card 3. 
+     * 2. Alice decrypts using her private key and passes the result to Bob.
+     *    Since the card was encrypted by Bob when Alice originally got it,
+     *    Alice only sees the result of Bob's encryption after decrypting the card for Bob.
+     * 3. Bob decrypts the card using his private key and reads off the value!
+    */
     unsigned long long res1 = ElGamal_decrypt_parts(alice_messages[3]->c_1, alice_messages[3]->c_2, alice_x);
     unsigned long long res2 = ElGamal_decrypt_parts(messages[3]->c_1, res1, bob_x);
     printf("3rd card is: %lld\n", res2);
 
-
-    // Alice chooses card 7, but doesn't know what's there
+    /**
+     * 1. Alice chooses card 7. 
+     * 2. Bob decrypts using his private key and passes the result to Alice.
+     *    Since the card was encrypted by Alice and the deck was shuffled, Bob
+     *    has no clue which card he has (partially) decrypted for alice.
+     * 3. Alice decrypts the card using her private key and reads off the value!
+    */
     res1 =  ElGamal_decrypt_parts(messages[7]->c_1, alice_messages[7]->c_2, bob_x);
     res2 = ElGamal_decrypt_parts(alice_messages[7]->c_1, res1, alice_x);
     printf("7th card is: %lld\n", res2);
 }
 
 int main(){
-    // unsigned long long x;
-    // printf("Choose a private key 2 <= x < %d\n", P_1-1);
-    // scanf("%lld", &x);
-    
-    // // Compute public key y
-    // unsigned long long y = find_y(x, P_1, G_1);
+    if(POKER){
+        mental_poker();
+    }else{
+        unsigned long long x;
+        printf("Choose a private key 2 <= x < %d\n", P_1-1);
+        scanf("%lld", &x);
+        
+        // Compute public key y
+        unsigned long long y = find_y(x, P_1, G_1);
 
-    // // Allocate memory for encrypted message
-    // ElGamalMessage* message = calloc(1, sizeof(ElGamalMessage));
+        // Allocate memory for encrypted message
+        ElGamalMessage* message = calloc(1, sizeof(ElGamalMessage));
 
-    // // Encrypt message and save into memory
-    // ElGamal_encrypt(3321321, y, message);
-    // printf("Encrypted Message C_1: %lld, C_2: %lld\n", message->c_1, message->c_2);
+        // Encrypt message and save into memory
+        ElGamal_encrypt(3321321, y, message);
+        printf("Encrypted Message C_1: %lld, C_2: %lld\n", message->c_1, message->c_2);
 
-    // // Decrypt message
-    // unsigned long long decrypted = ElGamal_decrypt(message, x);
-    // printf("Decrypted Message: %lld\n", decrypted);
-    
-    // // Free message memory
-    // free(message);
-
-    mental_poker();
+        // Decrypt message
+        unsigned long long decrypted = ElGamal_decrypt(message, x);
+        printf("Decrypted Message: %lld\n", decrypted);
+        
+        // Free message memory
+        free(message);
+    }
 
     return 0;
 }
