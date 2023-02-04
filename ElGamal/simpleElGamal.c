@@ -1,15 +1,18 @@
 /**
 * simpleElGamal.c - A simple terminal based 30 bit ElGamal implementation
 *
-* input:
-*
-* output:
-*
 * compile: make
 * usage: ./simpleElGamal
 *
 * Alphonso Bradham, Winter 2023
 *
+* ------------------------------[[INSTRUCTIONS]]------------------------------
+* To run this program in a way that showcases the "Mental Poker" El Gamal scheme,
+* set #define POKER 1. To get an interactive terminal for encrypting and decrypting
+* arbitrary messages with El Gamal, set #define POKER 0. For the Mental Poker example,
+* code in the `void mental_poker()` function explains how a deck is shuffled and read
+* from without any player (Alice or Bob) knowing which cards the other player has drawn.
+* ------------------------------[[END INSTRUCTIONS]]------------------------------
 */
 
 #include <stdio.h>
@@ -210,7 +213,7 @@ void mental_poker(){
 
     // Bob's initial card shuffle
     unsigned long long Bob_shuffle[16] = {13, 17, 4, 6, 14, 2, 12, 15, 5, 3, 7, 10, 8, 11, 16, 9};
-    printf("Bob's starting shuffle: {13, 17, 4, 6, 14, 2, 12, 15, 5, 3, 7, 10, 8, 11, 16, 9}\n");
+    printf("Bob's starting shuffle: {13, 17, 4, 6, 14, 2, 12, 15, 5, 3, 7, 10, 8, 11, 16, 9}\n\n");
 
     // Bob's encrypted card shuffle (all cards are now encrypted ElGamalMessage*s)
     //ElGamalMessage** messages = calloc(16, sizeof(ElGamalMessage));
@@ -229,10 +232,12 @@ void mental_poker(){
         ElGamal_encrypt_with_k(messages[i]->c_2, alice_y, alice_ks[i], new_message);
         alice_messages[i] = new_message;
     }
+    printf("Encrypted Alice's deck!\n");
 
     // Alice shuffles the deck using Fisher-Yates (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
     for (int i = 0; i < 16-1; ++i){
         int j = rand() % (16-i) + i;
+
         ElGamalMessage* temp_M = messages[i];
         ElGamalMessage* temp_AM = alice_messages[i];
 
@@ -242,6 +247,7 @@ void mental_poker(){
         alice_messages[i] = alice_messages[j];
         alice_messages[j] = temp_AM;
     }
+    printf("Shuffled Alice's deck!\n\n");
 
 
     /**
@@ -251,9 +257,13 @@ void mental_poker(){
      *    Alice only sees the result of Bob's encryption after decrypting the card for Bob.
      * 3. Bob decrypts the card using his private key and reads off the value!
     */
+    printf("----Bob chooses card #3----\n");
     unsigned long long res1 = ElGamal_decrypt_parts(alice_messages[3]->c_1, alice_messages[3]->c_2, alice_x);
+    printf("After asking Alice to decrypt card 3 with her private key, the result is %lld\n", res1);
+
+    printf("Finally, Bob decrypts the result of Alice's decryption to find that....\n");
     unsigned long long res2 = ElGamal_decrypt_parts(messages[3]->c_1, res1, bob_x);
-    printf("3rd card is: %lld\n", res2);
+    printf("3rd card is: %lld\n\n", res2);
 
     /**
      * 1. Alice chooses card 7. 
@@ -262,7 +272,11 @@ void mental_poker(){
      *    has no clue which card he has (partially) decrypted for alice.
      * 3. Alice decrypts the card using her private key and reads off the value!
     */
+    printf("----Alice chooses card #7----\n");
     res1 =  ElGamal_decrypt_parts(messages[7]->c_1, alice_messages[7]->c_2, bob_x);
+    printf("After asking Bob to decrypt card 3 with his private key, the result is %lld\n", res1);
+
+    printf("Finally, Alice decrypts the result of Bob's decryption to find that....\n");
     res2 = ElGamal_decrypt_parts(alice_messages[7]->c_1, res1, alice_x);
     printf("7th card is: %lld\n", res2);
 }
@@ -282,14 +296,25 @@ int main(){
         ElGamalMessage* message = calloc(1, sizeof(ElGamalMessage));
 
         // Encrypt message and save into memory
-        ElGamal_encrypt(3321321, y, message);
-        printf("Encrypted Message C_1: %lld, C_2: %lld\n", message->c_1, message->c_2);
+        unsigned long long plaintext;
+        while(1){
+            printf("Enter a message (must be a positive NUMBER < %d) to encrypt [Choose 0 to exit]: \n", P_1);
+            scanf("%lld", &plaintext);
 
-        // Decrypt message
-        unsigned long long decrypted = ElGamal_decrypt(message, x);
-        printf("Decrypted Message: %lld\n", decrypted);
+            if(plaintext == 0)
+                break;
+            printf("\nPlaintext: %lld\n", plaintext);
+
+            ElGamal_encrypt(plaintext, y, message);
+            printf("Encrypted Message C_1: %lld, C_2: %lld\n", message->c_1, message->c_2);
+
+            // Decrypt message
+            unsigned long long decrypted = ElGamal_decrypt(message, x);
+            printf("Decrypted Message: %lld\n\n", decrypted);
+        }
         
         // Free message memory
+        printf("Exiting program!\n");
         free(message);
     }
 
