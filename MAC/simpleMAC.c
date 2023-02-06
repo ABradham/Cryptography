@@ -500,40 +500,14 @@ void calc_collision(unsigned char* m_1, unsigned char* m_2, unsigned int m_1_blo
     printf("As you can see, the MAC for the message we generated is the same as the MAC for M2\n");
 }
 
+/**
+     * Idea: Message is M_1 || h_1 ^ h_2 || M_2
+*/
 int main() {
     unsigned char key[8] = {0x0f, 0x15, 0x71, 0xc9, 0x47, 0xd9, 0xe8, 0x59};
-    unsigned char plaintext_blocks[24] = {0x02, 0x46, 0x8a, 0xce, 0xec, 0xa8, 0x64, 0x20, 0x12, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x12, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
-    // unsigned char res_MAC[8];
+    unsigned char m_1[8] = {0x02, 0x46, 0x8a, 0xce, 0xec, 0xa8, 0x64, 0x20};
+    unsigned char m_2[24] = {0x02, 0x46, 0x8a, 0xce, 0xec, 0xa8, 0x64, 0x20, 0x12, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x12, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+
     
-    
-    // // ---------- SIMPLE MAC TEST ----------
-    // printf("Plaintext: %32s\n", bin_to_string(plaintext_blocks, 24));
-    // cbc_des_mac(plaintext_blocks, 3, key, res_MAC);
-    // printf("MAC: %32s\n\n", bin_to_string(res_MAC, 8));
-
-    // MAC TEST TO PROVE H_1 and H_2 can be produced
-    /**
-     * Idea: Message is M_1 || h_1 ^ h_2 || M_2
-    */
-   unsigned char m_1[8] = {0x02, 0x46, 0x8a, 0xce, 0xec, 0xa8, 0x64, 0x20};
-   //unsigned char m_2[8] = {0x12, 0x11, 0x0a, 0xed, 0x1c, 0xdd, 0xa1, 0xb7};
-//    unsigned char h_1[8];
-//    unsigned char h_2[8];
-//    cbc_des_mac(m_1, 1, key, h_1);
-//    cbc_des_mac(m_2, 1, key, h_2);
-
-//    printf("H1: %s\n", bin_to_string(h_1, 8));
-//    printf("H2: %s\n", bin_to_string(h_2, 8));
-
-//    // Create contrived message to prove we can generate new message that hashes to H_2
-//    unsigned char middle[8];
-//    xor(h_1, m_2, middle, 8);
-//    unsigned char contrived[24];
-//    memcpy(contrived, m_1, 8 * sizeof(unsigned char));
-//    memcpy(&contrived[8], middle, 8 * sizeof(unsigned char));
-
-//    unsigned char output[8];
-//    cbc_des_mac(contrived, 2, key, output);
-//    printf("Output: %s\n", bin_to_string(output, 8));
-    calc_collision(m_1, plaintext_blocks, 1, 3, key);
+    calc_collision(m_1, m_2, 1, 3, key);
 }
