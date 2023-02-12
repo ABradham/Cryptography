@@ -501,7 +501,7 @@ void calc_collision(unsigned char* m_1, unsigned char* m_2, unsigned int m_1_blo
 }
 
 /**
-     * Idea: Message is M_1 || h_1 ^ h_2 || M_2
+* Idea: Message is M_1 || h_1 ^ h_2 || M_2
 */
 int main() {
     unsigned char key[8] = {0x0f, 0x15, 0x71, 0xc9, 0x47, 0xd9, 0xe8, 0x59};
