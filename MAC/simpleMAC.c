@@ -453,7 +453,7 @@ void cbc_des_mac(unsigned char* blocks, unsigned int num_blocks, unsigned char k
         xor(res, &blocks[i * 8], curr_res, 8);
 
         // Encrypt current res with des and save to res
-        des_encrypt(curr_res, key, curr_res); //TODO(abradham): If something isn't working tru just adding an additional buffer here
+        des_encrypt(curr_res, key, curr_res);
         memcpy(res, curr_res, 8 * sizeof(unsigned char));
     }
 
